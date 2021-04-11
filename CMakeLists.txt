@@ -2,7 +2,7 @@
 
 cmake_minimum_required(VERSION 3.15)
 
-project(comm_proj LANGUAGES CXX)
+project(io_proj LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -52,18 +52,18 @@ endif ()
 # Subprojects
 
 # Library
-add_library(comm)
+add_library(io)
 
-target_sources(comm PRIVATE
-    src/comm/lib.cc
+target_sources(io PRIVATE
+    src/io/lib.cc
 )
 
-target_include_directories(comm PUBLIC
+target_include_directories(io PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-target_link_libraries(comm
+target_link_libraries(io
     spdlog::spdlog
 )
 
@@ -80,7 +80,7 @@ target_include_directories(interface PUBLIC
 )
 
 target_link_libraries(interface
-    comm
+    io
     fmt::fmt
 )
 
@@ -95,7 +95,7 @@ target_sources(simple_test PRIVATE
 
 target_link_libraries(simple_test
     gtest_main
-    comm
+    io
 )
 
 target_include_directories(simple_test PUBLIC

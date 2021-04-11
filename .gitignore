@@ -1,5 +1,5 @@
-CMAKE_CURRENT_SOURCE_DIR
 docs
+build
 
 .vscode
 .vs
