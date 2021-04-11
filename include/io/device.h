@@ -1,8 +1,32 @@
 #pragma once
 
-#include <io/non_copyable.h>
+#include <common/non_copyable.h>
 
 #include <cstdint>
+
+#if defined(IO_OS_WINDOWS)
+    #define MAKE_OS_ERROR()                                                                                            \
+        (io::Error{                                                                                                    \
+            .m_status = Error::Status::OS_ERROR,                                                                       \
+            .m_code = GetLastError(),                                                                                  \
+        })
+
+    #define OS_CALL_FAILED(c) (!(c))
+#elif defined(IO_OS_LINUX)
+    #define MAKE_OS_ERROR()                                                                                            \
+        (io::Error{                                                                                                    \
+            .m_status = Error::Status::OS_ERROR,                                                                       \
+            .m_code = errno,                                                                                           \
+        })
+
+    #define OS_CALL_FAILED(c) ((c) == -1)
+
+    #define OS_CALL(c)                                                                                                 \
+        if ( OS_CALL_FAILED(c) )                                                                                       \
+        {                                                                                                              \
+            return MAKE_OS_ERROR();                                                                                    \
+        }
+#endif
 
 namespace io
 {
@@ -11,7 +35,8 @@ namespace io
     public:
         enum class Status
         {
-            OK
+            OK,
+            OS_ERROR,
         };
 
         Status m_status{ Status::OK };

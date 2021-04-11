@@ -3,21 +3,38 @@
 #include <io/device.h>
 #include <io/handle.h>
 
+#if defined(IO_OS_WINDOWS)
+    #include <windows.h>
+#elif defined(IO_OS_LINUX)
+    #include <fcntl.h>
+    #include <termios.h>
+    #include <unistd.h>
+#endif
+
 #include <string_view>
 
 namespace io
 {
     class Serial : public Device
     {
-        Handle m_handle;
+        Handle m_handle{ IO_NO_HANDLE };
 
     public:
+        enum class BaudRate
+        {
+#if defined(IO_OS_WINDOWS)
+            BAUDRATE_9600 = CBR_9600,
+#elif defined(IO_OS_LINUX)
+            BAUDRATE_9600 = B9600,
+#endif
+        };
+
         ~Serial();
 
         Error open(const std::string& name);
         void close();
 
-        Error set_baud_rate(const int baud_rate);
+        Error set_baud_rate(const BaudRate baud_rate);
         Error set_read_timeout(const int timeout_ms);
         Error set_write_timeout(const int timeout_ms);
 
