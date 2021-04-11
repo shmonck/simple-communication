@@ -9,7 +9,7 @@
     #define MAKE_OS_ERROR()                                                                                            \
         (IO::Error{                                                                                                    \
             .m_status = Error::Status::OS_ERROR,                                                                       \
-            .m_code = static_cast<int>(GetLastError()),                                                                                  \
+            .m_code = static_cast<int>(GetLastError()),                                                                \
         })
 
     #define OS_CALL_FAILED(c) (!(c))

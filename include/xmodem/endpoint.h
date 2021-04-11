@@ -11,9 +11,9 @@ namespace XModem
     {
     protected:
         IO::Serial* const m_serial;
-        ErrorDetection* const m_checksum;
+        ErrorDetection* const m_error_detection;
 
-        Endpoint(IO::Serial& serial, ErrorDetection& checksum);
+        Endpoint(IO::Serial& serial, ErrorDetection& error_detection);
 
         virtual bool initialize_transmission() const = 0;
     };

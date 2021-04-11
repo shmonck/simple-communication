@@ -2,7 +2,8 @@
 
 namespace XModem
 {
-    Endpoint::Endpoint(IO::Serial& serial, ErrorDetection& checksum) : m_serial(&serial), m_checksum(&checksum)
+    Endpoint::Endpoint(IO::Serial& serial, ErrorDetection& error_detection) :
+        m_serial(&serial), m_error_detection(&error_detection)
     {
     
     }
