@@ -1,8 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <comm/lib.h>
-
 TEST(SimpleTest, BasicAssertions)
 {
-    ASSERT_EQ(lib::foo(), 42);
+    ASSERT_EQ(7 * 6, 42);
 }

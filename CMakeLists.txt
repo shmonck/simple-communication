@@ -55,7 +55,7 @@ endif ()
 add_library(io)
 
 target_sources(io PRIVATE
-    src/io/lib.cc
+    src/io/serial.cc
 )
 
 target_include_directories(io PUBLIC

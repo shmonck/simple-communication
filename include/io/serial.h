@@ -38,8 +38,8 @@ namespace io
         Error set_read_timeout(const int timeout_ms);
         Error set_write_timeout(const int timeout_ms);
 
-        virtual Error write(const std::uint8_t* const data, const std::size_t length) final;
-        virtual Error read(std::uint8_t* const buffer, const std::size_t length) final;
-        virtual Error readsome(std::uint8_t* const buffer, const std::size_t length, std::size_t& read_bytes_n) final;
+        virtual Error write(const void* const data, const std::size_t length) final;
+        virtual Error read(void* const buffer, const std::size_t length) final;
+        virtual Error readsome(void* const buffer, const std::size_t length, std::size_t& read_bytes_n) final;
     };
 }  // namespace io

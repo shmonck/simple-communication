@@ -5,6 +5,11 @@
 
 namespace io
 {
+    Serial::~Serial()
+    {
+        close();
+    }
+
     Error Serial::open(const std::string& name)
     {
 #if defined(IO_OS_WINDOWS)
@@ -97,7 +102,7 @@ namespace io
         return Error{};
     }
 
-    Error Serial::write(const std::uint8_t* const data, const std::size_t length)
+    Error Serial::write(const void* const data, const std::size_t length)
     {
         std::size_t all_written_bytes_n{ 0 };
 
@@ -109,7 +114,8 @@ namespace io
             OS_CALL(
                 WriteFile(m_handle, data + all_written_bytes_n, length - all_written_bytes_n, &written_bytes_n, NULL));
 #elif defined(IO_OS_LINUX)
-            int int_written_bytes_n = ::write(m_handle, data + all_written_bytes_n, length - all_written_bytes_n);
+            int int_written_bytes_n =
+                ::write(m_handle, static_cast<const char*>(data) + all_written_bytes_n, length - all_written_bytes_n);
 
             if ( int_written_bytes_n == -1 )
             {
@@ -125,14 +131,15 @@ namespace io
         return Error{};
     }
 
-    Error Serial::read(std::uint8_t* const buffer, const std::size_t length)
+    Error Serial::read(void* const buffer, const std::size_t length)
     {
         std::size_t all_read_bytes_n{ 0 };
 
         while ( all_read_bytes_n < length )
         {
             std::size_t read_bytes_n;
-            Error error = readsome(buffer + all_read_bytes_n, length - all_read_bytes_n, read_bytes_n);
+            Error error =
+                readsome(static_cast<char*>(buffer) + all_read_bytes_n, length - all_read_bytes_n, read_bytes_n);
 
             if ( !error.is_ok() )
             {
@@ -145,7 +152,7 @@ namespace io
         return Error{};
     }
 
-    Error Serial::readsome(std::uint8_t* const buffer, const std::size_t length, std::size_t& read_bytes_n)
+    Error Serial::readsome(void* const buffer, const std::size_t length, std::size_t& read_bytes_n)
     {
 #if defined(IO_OS_WINDOWS)
         DWORD dword_read_bytes_n;

@@ -3,6 +3,7 @@
 #include <common/non_copyable.h>
 
 #include <cstdint>
+#include <string_view>
 
 #if defined(IO_OS_WINDOWS)
     #define MAKE_OS_ERROR()                                                                                            \
@@ -53,10 +54,10 @@ namespace io
     class Device : public NonCopyable
     {
     public:
-        virtual ~Device();
+        virtual ~Device() = default;
 
-        virtual Error write(const std::uint8_t* const data, const std::size_t length) = 0;
-        virtual Error read(std::uint8_t* const buffer, const std::size_t length) = 0;
-        virtual Error readsome(std::uint8_t* const buffer, const std::size_t length, std::size_t& read_bytes_n) = 0;
+        virtual Error write(const void* const data, const std::size_t length) = 0;
+        virtual Error read(void* const buffer, const std::size_t length) = 0;
+        virtual Error readsome(void* const buffer, const std::size_t length, std::size_t& read_bytes_n) = 0;
     };
 }  // namespace io
