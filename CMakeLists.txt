@@ -1,0 +1,109 @@
+# TODO Add static/shared build option and find_library support
+
+cmake_minimum_required(VERSION 3.15)
+
+project(comm_proj LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 20)
+
+include(FetchContent)
+
+FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG release-1.10.0
+)
+
+FetchContent_MakeAvailable(googletest)
+
+find_package(spdlog REQUIRED)
+find_package(fmt REQUIRED)
+
+# Warnings
+
+# TODO: Add for other compilers
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  set(PEDANTIC_COMPILE_FLAGS -pedantic-errors -Wall -Wextra -pedantic
+      -Wold-style-cast -Wundef
+      -Wredundant-decls -Wwrite-strings -Wpointer-arith
+      -Wcast-qual -Wformat=2 -Wmissing-include-dirs
+      -Wcast-align
+      -Wctor-dtor-privacy -Wdisabled-optimization
+      -Winvalid-pch -Woverloaded-virtual
+      -Wconversion -Wswitch-enum -Wundef
+      -Wno-ctor-dtor-privacy -Wno-format-nonliteral)
+  if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.6)
+      set(PEDANTIC_COMPILE_FLAGS ${PEDANTIC_COMPILE_FLAGS} -Wnoexcept
+         -Wno-dangling-else -Wno-unused-local-typedefs)
+  endif ()
+  if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0)
+      set(PEDANTIC_COMPILE_FLAGS ${PEDANTIC_COMPILE_FLAGS} -Wdouble-promotion
+          -Wtrampolines -Wzero-as-null-pointer-constant -Wuseless-cast
+          -Wvector-operation-performance -Wsized-deallocation -Wshadow)
+  endif ()
+  if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.0)
+      set(PEDANTIC_COMPILE_FLAGS ${PEDANTIC_COMPILE_FLAGS} -Wshift-overflow=2
+          -Wnull-dereference -Wduplicated-cond)
+  endif ()
+  set(WERROR_FLAG -Werror)
+endif ()
+
+# Subprojects
+
+# Library
+add_library(comm)
+
+target_sources(comm PRIVATE
+    src/comm/lib.cc
+)
+
+target_include_directories(comm PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+target_link_libraries(comm
+    spdlog::spdlog
+)
+
+# Executable
+add_executable(interface)
+
+target_sources(interface PRIVATE
+    src/interface/main.cc
+)
+
+target_include_directories(interface PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+target_link_libraries(interface
+    comm
+    fmt::fmt
+)
+
+# Testing
+enable_testing()
+
+add_executable(simple_test)
+
+target_sources(simple_test PRIVATE
+    test/simple_test.cc
+)
+
+target_link_libraries(simple_test
+    gtest_main
+    comm
+)
+
+target_include_directories(simple_test PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+include(GoogleTest)
+
+gtest_discover_tests(simple_test)
+

@@ -1,0 +1,6 @@
+CMAKE_CURRENT_SOURCE_DIR
+docs
+
+.vscode
+.vs
+.idea
