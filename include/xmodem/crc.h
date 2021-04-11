@@ -2,29 +2,33 @@
 
 #include <xmodem/error_detection.h>
 
-class Checksum : public ErrorDetection
+namespace XModem
 {
-    static std::uint16_t crc(const char* const data, const std::size_t length);
-
-public:
-    virtual void
-    append_verification_bytes(Packet& packet, const char* const data, const std::size_t length) const final;
-
-    virtual bool verify_packet(const Packet& packet, const char* const data, const std::size_t length) const final;
-
-    inline virtual Symbol get_init_symbol() const final
+    class CRC : public ErrorDetection
     {
-        return Symbol::C;
-    }
+        [[nodiscard]] static std::uint16_t crc(const char* const data, const std::size_t length);
 
-    inline virtual std::size_t get_total_packet_size() const final
-    {
-        // SOH, Packet number, Inv packet number, CRC16
-        return 3 + PACKET_DATA_SIZE + 2;
-    }
+    public:
+        virtual void
+        append_verification_bytes(Packet& packet, const char* const data, const std::size_t length) const final;
 
-    inline virtual std::string_view get_method_name() const final
-    {
-        return "CRC";
-    }
-};
+        [[nodiscard]] virtual bool
+        is_verification_ok(const Packet& packet, const char* const data, const std::size_t length) const final;
+
+        [[nodiscard]] inline virtual Symbol get_init_symbol() const final
+        {
+            return Symbol::C;
+        }
+
+        [[nodiscard]] inline virtual std::size_t get_total_packet_size() const final
+        {
+            // SOH, Packet number, Inv packet number, CRC16
+            return 3 + PACKET_DATA_SIZE + 2;
+        }
+
+        [[nodiscard]] inline virtual std::string_view get_method_name() const final
+        {
+            return "CRC";
+        }
+    };
+}  // namespace XModem

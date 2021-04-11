@@ -1,5 +1,6 @@
 #include <xmodem/packet.h>
 
+/*
 namespace XModem
 {
     void Packet::append(const void* const data, const std::size_t length)
@@ -31,3 +32,4 @@ namespace XModem
         return true;
     }
 }  // namespace XModem
+*/

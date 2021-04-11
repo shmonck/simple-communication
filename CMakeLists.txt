@@ -59,6 +59,10 @@ add_library(xmodem)
 target_sources(xmodem PRIVATE
     src/xmodem/packet.cc
     src/xmodem/endpoint.cc
+    src/xmodem/checksum.cc
+    src/xmodem/crc.cc
+    src/xmodem/receiver.cc
+    src/xmodem/transmitter.cc
 )
 
 target_include_directories(xmodem PUBLIC

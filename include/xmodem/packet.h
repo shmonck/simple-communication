@@ -1,5 +1,8 @@
 #pragma once
 
+#include <xmodem/defines.h>
+
+/*
 #include <cstdint>
 #include <vector>
 #include <stdexcept>
@@ -41,3 +44,4 @@ namespace XModem
         }
     };
 }  // namespace transfer
+*/

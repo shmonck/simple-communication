@@ -12,7 +12,7 @@ int main()
     fmt::print("Enter port: ");
     std::getline(std::cin, port);
 
-    auto serial = io::Serial();
+    auto serial = IO::Serial();
     if ( !serial.open(port).is_ok() )
     {
         fmt::print(fmt::fg(fmt::color::red), "Could not open specified port\n");
