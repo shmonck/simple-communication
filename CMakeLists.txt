@@ -53,8 +53,21 @@ target_include_directories(io PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
-target_link_libraries(io
+# Library
+add_library(xmodem)
+
+target_sources(xmodem PRIVATE
+    src/xmodem/packet.cc
+    src/xmodem/endpoint.cc
+)
+
+target_include_directories(xmodem PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
+
+target_link_libraries(xmodem
     spdlog::spdlog
+    io
 )
 
 # Executable
@@ -70,6 +83,7 @@ target_include_directories(interface PUBLIC
 
 target_link_libraries(interface
     io
+    xmodem
     fmt::fmt
 )
 
@@ -85,6 +99,7 @@ target_sources(simple_test PRIVATE
 target_link_libraries(simple_test
     GTest::gtest_main
     io
+    xmodem
 )
 
 target_include_directories(simple_test PUBLIC

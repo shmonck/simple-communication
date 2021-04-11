@@ -3,9 +3,9 @@
 #include <io/device.h>
 #include <io/handle.h>
 
-#if defined(IO_OS_WINDOWS)
+#if defined(PLATFORM_WINDOWS)
     #include <windows.h>
-#elif defined(IO_OS_LINUX)
+#elif defined(PLATFORM_LINUX)
     #include <fcntl.h>
     #include <termios.h>
     #include <unistd.h>
@@ -13,7 +13,7 @@
 
 #include <string_view>
 
-namespace io
+namespace IO
 {
     class Serial : public Device
     {
@@ -22,11 +22,11 @@ namespace io
     public:
         enum class BaudRate
         {
-#if defined(IO_OS_WINDOWS)
+    #if defined(PLATFORM_WINDOWS)
             BAUDRATE_9600 = CBR_9600,
-#elif defined(IO_OS_LINUX)
+    #elif defined(PLATFORM_LINUX)
             BAUDRATE_9600 = B9600,
-#endif
+    #endif
         };
 
         ~Serial();
@@ -42,4 +42,4 @@ namespace io
         virtual Error read(void* const buffer, const std::size_t length) final;
         virtual Error readsome(void* const buffer, const std::size_t length, std::size_t& read_bytes_n) final;
     };
-}  // namespace io
+}

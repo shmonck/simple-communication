@@ -1,12 +1,9 @@
 #pragma once
 
-namespace io
+class NonCopyable
 {
-    class NonCopyable
-    {
-    public:
-        NonCopyable() = default;
-        NonCopyable(const NonCopyable&) = delete;
-        NonCopyable& operator=(const NonCopyable&) = delete;
-    };
-}  // namespace io
+public:
+    NonCopyable() = default;
+    NonCopyable(const NonCopyable&) = delete;
+    NonCopyable& operator=(const NonCopyable&) = delete;
+};

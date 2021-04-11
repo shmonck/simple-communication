@@ -5,9 +5,9 @@
 #include <cstdint>
 #include <string_view>
 
-#if defined(IO_OS_WINDOWS)
+#if defined(PLATFORM_WINDOWS)
     #define MAKE_OS_ERROR()                                                                                            \
-        (io::Error{                                                                                                    \
+        (IO::Error{                                                                                                    \
             .m_status = Error::Status::OS_ERROR,                                                                       \
             .m_code = static_cast<int>(GetLastError()),                                                                                  \
         })
@@ -19,9 +19,9 @@
         {                                                                                                              \
             return MAKE_OS_ERROR();                                                                                    \
         }
-#elif defined(IO_OS_LINUX)
+#elif defined(PLATFORM_LINUX)
     #define MAKE_OS_ERROR()                                                                                            \
-        (io::Error{                                                                                                    \
+        (IO::Error{                                                                                                    \
             .m_status = Error::Status::OS_ERROR,                                                                       \
             .m_code = errno,                                                                                           \
         })
@@ -35,7 +35,7 @@
         }
 #endif
 
-namespace io
+namespace IO
 {
     class Error
     {
@@ -66,4 +66,4 @@ namespace io
         virtual Error read(void* const buffer, const std::size_t length) = 0;
         virtual Error readsome(void* const buffer, const std::size_t length, std::size_t& read_bytes_n) = 0;
     };
-}  // namespace io
+}  // namespace IO

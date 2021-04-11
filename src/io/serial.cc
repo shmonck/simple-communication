@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace io
+namespace IO
 {
     Serial::~Serial()
     {
@@ -12,7 +12,7 @@ namespace io
 
     Error Serial::open(const std::string& name)
     {
-#if defined(IO_OS_WINDOWS)
+#if defined(PLATFORM_WINDOWS)
         m_handle = CreateFile(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 
         if ( m_handle == INVALID_HANDLE_VALUE )
@@ -21,7 +21,7 @@ namespace io
 
             return MAKE_OS_ERROR();
         }
-#elif defined(IO_OS_LINUX)
+#elif defined(PLATFORM_LINUX)
         m_handle = ::open(name.c_str(), O_RDWR);
 
         if ( m_handle == -1 )
@@ -41,16 +41,16 @@ namespace io
             return;
         }
 
-#if defined(IO_OS_WINDOWS)
+#if defined(PLATFORM_WINDOWS)
         CloseHandle(m_handle);
-#elif defined(IO_OS_LINUX)
+#elif defined(PLATFORM_LINUX)
         ::close(m_handle);
 #endif
     }
 
     Error Serial::set_baud_rate(const BaudRate baud_rate)
     {
-#if defined(IO_OS_WINDOWS)
+#if defined(PLATFORM_WINDOWS)
         DCB dcb;
         ZeroMemory(&dcb, sizeof(DCB));
         dcb.DCBlength = sizeof(dcb);
@@ -60,7 +60,7 @@ namespace io
         dcb.BaudRate = static_cast<DWORD>(baud_rate);
 
         OS_CALL(SetCommState(m_handle, &dcb));
-#elif defined(IO_OS_LINUX)
+#elif defined(PLATFORM_LINUX)
         termios termios_;
 
         OS_CALL(tcgetattr(m_handle, &termios_));
@@ -72,7 +72,7 @@ namespace io
 
     Error Serial::set_read_timeout(const int timeout_ms)
     {
-#if defined(IO_OS_WINDOWS)
+#if defined(PLATFORM_WINDOWS)
         COMMTIMEOUTS commtimeouts;
 
         OS_CALL(GetCommTimeouts(m_handle, &commtimeouts));
@@ -80,7 +80,7 @@ namespace io
         commtimeouts.ReadTotalTimeoutConstant = timeout_ms;
 
         OS_CALL(SetCommTimeouts(m_handle, &commtimeouts));
-#elif defined(IO_OS_LINUX)
+#elif defined(PLATFORM_LINUX)
         // TODO: Implement this
 #endif
         return Error{};
@@ -88,7 +88,7 @@ namespace io
 
     Error Serial::set_write_timeout(const int timeout_ms)
     {
-#if defined(IO_OS_WINDOWS)
+#if defined(PLATFORM_WINDOWS)
         COMMTIMEOUTS commtimeouts;
 
         OS_CALL(GetCommTimeouts(m_handle, &commtimeouts));
@@ -96,7 +96,7 @@ namespace io
         commtimeouts.WriteTotalTimeoutConstant = timeout_ms;
 
         OS_CALL(SetCommTimeouts(m_handle, &commtimeouts));
-#elif defined(IO_OS_LINUX)
+#elif defined(PLATFORM_LINUX)
         // TODO: Implement this
 #endif
         return Error{};
@@ -110,7 +110,7 @@ namespace io
         {
             std::size_t written_bytes_n;
 
-#if defined(IO_OS_WINDOWS)
+#if defined(PLATFORM_WINDOWS)
             DWORD dword_written_bytes_n;
 
             OS_CALL(WriteFile(m_handle,
@@ -120,7 +120,7 @@ namespace io
                               NULL));
 
             written_bytes_n = static_cast<std::size_t>(dword_written_bytes_n);
-#elif defined(IO_OS_LINUX)
+#elif defined(PLATFORM_LINUX)
             int int_written_bytes_n =
                 ::write(m_handle, static_cast<const char*>(data) + all_written_bytes_n, length - all_written_bytes_n);
 
@@ -161,12 +161,12 @@ namespace io
 
     Error Serial::readsome(void* const buffer, const std::size_t length, std::size_t& read_bytes_n)
     {
-#if defined(IO_OS_WINDOWS)
+#if defined(PLATFORM_WINDOWS)
         DWORD dword_read_bytes_n;
         OS_CALL(ReadFile(m_handle, buffer, length, &dword_read_bytes_n, NULL));
 
         read_bytes_n = static_cast<std::size_t>(dword_read_bytes_n);
-#elif defined(IO_OS_LINUX)
+#elif defined(PLATFORM_LINUX)
         int int_read_bytes_n = ::read(m_handle, buffer, length);
 
         if ( int_read_bytes_n == -1 )
@@ -182,4 +182,4 @@ namespace io
 #endif
         return Error{};
     }
-}  // namespace io
+}  // namespace IO
