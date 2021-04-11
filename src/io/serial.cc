@@ -13,7 +13,7 @@ namespace io
     Error Serial::open(const std::string& name)
     {
 #if defined(IO_OS_WINDOWS)
-        m_handle = CreateFile(name.c_str(), GENERIC_READ | GENERIC_WRITE 0, NULL, OPEN_EXISTING, 0, NULL);
+        m_handle = CreateFile(name.c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 
         if ( m_handle == INVALID_HANDLE_VALUE )
         {
@@ -42,7 +42,7 @@ namespace io
         }
 
 #if defined(IO_OS_WINDOWS)
-        CloseFile(m_handle);
+        CloseHandle(m_handle);
 #elif defined(IO_OS_LINUX)
         ::close(m_handle);
 #endif
@@ -111,8 +111,15 @@ namespace io
             std::size_t written_bytes_n;
 
 #if defined(IO_OS_WINDOWS)
-            OS_CALL(
-                WriteFile(m_handle, data + all_written_bytes_n, length - all_written_bytes_n, &written_bytes_n, NULL));
+            DWORD dword_written_bytes_n;
+
+            OS_CALL(WriteFile(m_handle,
+                              static_cast<const char*>(data) + all_written_bytes_n,
+                              length - all_written_bytes_n,
+                              &dword_written_bytes_n,
+                              NULL));
+
+            written_bytes_n = static_cast<std::size_t>(dword_written_bytes_n);
 #elif defined(IO_OS_LINUX)
             int int_written_bytes_n =
                 ::write(m_handle, static_cast<const char*>(data) + all_written_bytes_n, length - all_written_bytes_n);

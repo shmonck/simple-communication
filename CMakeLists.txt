@@ -6,16 +6,7 @@ project(io_proj LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 
-include(FetchContent)
-
-FetchContent_Declare(
-    googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG release-1.10.0
-)
-
-FetchContent_MakeAvailable(googletest)
-
+find_package(GTest REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(fmt REQUIRED)
 
@@ -60,7 +51,6 @@ target_sources(io PRIVATE
 
 target_include_directories(io PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 target_link_libraries(io
@@ -76,7 +66,6 @@ target_sources(interface PRIVATE
 
 target_include_directories(interface PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 target_link_libraries(interface
@@ -94,13 +83,12 @@ target_sources(simple_test PRIVATE
 )
 
 target_link_libraries(simple_test
-    gtest_main
+    GTest::gtest_main
     io
 )
 
 target_include_directories(simple_test PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 include(GoogleTest)

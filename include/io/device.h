@@ -9,10 +9,16 @@
     #define MAKE_OS_ERROR()                                                                                            \
         (io::Error{                                                                                                    \
             .m_status = Error::Status::OS_ERROR,                                                                       \
-            .m_code = GetLastError(),                                                                                  \
+            .m_code = static_cast<int>(GetLastError()),                                                                                  \
         })
 
     #define OS_CALL_FAILED(c) (!(c))
+
+    #define OS_CALL(c)                                                                                                 \
+        if ( OS_CALL_FAILED(c) )                                                                                       \
+        {                                                                                                              \
+            return MAKE_OS_ERROR();                                                                                    \
+        }
 #elif defined(IO_OS_LINUX)
     #define MAKE_OS_ERROR()                                                                                            \
         (io::Error{                                                                                                    \

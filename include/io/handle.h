@@ -3,7 +3,7 @@
 #include <common/system.h>
 
 #if defined(IO_OS_WINDOWS)
-    #include <basetsd.h>
+    #include <windows.h>
 #endif
 
 namespace io
