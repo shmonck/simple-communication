@@ -12,7 +12,7 @@ namespace XModem
         [[nodiscard]] bool is_packet_valid(const Packet& packet, const std::uint16_t packet_n) const;
 
     public:
-        Receiver(IO::Serial& serial, ErrorDetection& checksum);
+        Receiver(IO::Serial& serial, ErrorDetection& error_detection);
 
         bool receive(std::ostream& ostream);
     };
