@@ -9,7 +9,7 @@ namespace XModem
         // TODO: Deduce the error detection method by initial symbol
 
         // TODO: Move this somewhere else
-        constexpr std::size_t try_count = 10;
+        constexpr std::size_t try_count{ 10 };
 
         for ( std::size_t i = 0; i < try_count; i++ )
         {
