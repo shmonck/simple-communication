@@ -1,5 +1,11 @@
 #pragma once
 
+/**
+ * @class NonCopyable
+ *
+ * @brief Used to make inherited classes uncopyable
+ *
+ */
 class NonCopyable
 {
 public:

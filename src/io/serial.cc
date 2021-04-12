@@ -55,17 +55,17 @@ namespace IO
         ZeroMemory(&dcb, sizeof(DCB));
         dcb.DCBlength = sizeof(dcb);
 
-        OS_CALL(GetCommState(m_handle, &dcb));
+        OS_CALL_OR_ERROR(GetCommState(m_handle, &dcb));
 
         dcb.BaudRate = static_cast<DWORD>(baud_rate);
 
-        OS_CALL(SetCommState(m_handle, &dcb));
+        OS_CALL_OR_ERROR(SetCommState(m_handle, &dcb));
 #elif defined(PLATFORM_LINUX)
         termios termios_;
 
-        OS_CALL(tcgetattr(m_handle, &termios_));
-        OS_CALL(cfsetspeed(&termios_, static_cast<speed_t>(baud_rate)));
-        OS_CALL(tcsetattr(m_handle, TCSANOW, &termios_));
+        OS_CALL_OR_ERROR(tcgetattr(m_handle, &termios_));
+        OS_CALL_OR_ERROR(cfsetspeed(&termios_, static_cast<speed_t>(baud_rate)));
+        OS_CALL_OR_ERROR(tcsetattr(m_handle, TCSANOW, &termios_));
 #endif
         return Error{};
     }
@@ -75,11 +75,11 @@ namespace IO
 #if defined(PLATFORM_WINDOWS)
         COMMTIMEOUTS commtimeouts;
 
-        OS_CALL(GetCommTimeouts(m_handle, &commtimeouts));
+        OS_CALL_OR_ERROR(GetCommTimeouts(m_handle, &commtimeouts));
 
         commtimeouts.ReadTotalTimeoutConstant = timeout_ms;
 
-        OS_CALL(SetCommTimeouts(m_handle, &commtimeouts));
+        OS_CALL_OR_ERROR(SetCommTimeouts(m_handle, &commtimeouts));
 #elif defined(PLATFORM_LINUX)
         // TODO: Implement this
 #endif
@@ -91,11 +91,11 @@ namespace IO
 #if defined(PLATFORM_WINDOWS)
         COMMTIMEOUTS commtimeouts;
 
-        OS_CALL(GetCommTimeouts(m_handle, &commtimeouts));
+        OS_CALL_OR_ERROR(GetCommTimeouts(m_handle, &commtimeouts));
 
         commtimeouts.WriteTotalTimeoutConstant = timeout_ms;
 
-        OS_CALL(SetCommTimeouts(m_handle, &commtimeouts));
+        OS_CALL_OR_ERROR(SetCommTimeouts(m_handle, &commtimeouts));
 #elif defined(PLATFORM_LINUX)
         // TODO: Implement this
 #endif
@@ -113,11 +113,11 @@ namespace IO
 #if defined(PLATFORM_WINDOWS)
             DWORD dword_written_bytes_n;
 
-            OS_CALL(WriteFile(m_handle,
-                              static_cast<const char*>(data) + all_written_bytes_n,
-                              length - all_written_bytes_n,
-                              &dword_written_bytes_n,
-                              NULL));
+            OS_CALL_OR_ERROR(WriteFile(m_handle,
+                                       static_cast<const char*>(data) + all_written_bytes_n,
+                                       length - all_written_bytes_n,
+                                       &dword_written_bytes_n,
+                                       NULL));
 
             written_bytes_n = static_cast<std::size_t>(dword_written_bytes_n);
 #elif defined(PLATFORM_LINUX)
@@ -163,7 +163,7 @@ namespace IO
     {
 #if defined(PLATFORM_WINDOWS)
         DWORD dword_read_bytes_n;
-        OS_CALL(ReadFile(m_handle, buffer, length, &dword_read_bytes_n, NULL));
+        OS_CALL_OR_ERROR(ReadFile(m_handle, buffer, length, &dword_read_bytes_n, NULL));
 
         read_bytes_n = static_cast<std::size_t>(dword_read_bytes_n);
 #elif defined(PLATFORM_LINUX)
