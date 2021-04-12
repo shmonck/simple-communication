@@ -6,13 +6,13 @@
 
 namespace XModem
 {
-	class Transmitter : public Endpoint
+    class Transmitter : public Endpoint
     {
         virtual bool initialize_transmission() const final;
 
     public:
         Transmitter(IO::Serial& serial, ErrorDetection& checksum);
 
-        void send(std::istream& istream);
+        bool send(std::istream& istream);
     };
-}
+}  // namespace XModem

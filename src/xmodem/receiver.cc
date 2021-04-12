@@ -8,9 +8,9 @@ namespace XModem
 
         const Symbol init_symbol = m_error_detection->get_init_symbol();
 
-        while (true)
+        while ( true )
         {
-            if ( !m_serial->write(&init_symbol, sizeof(Symbol)).is_ok())
+            if ( !m_serial->write(&init_symbol, sizeof(Symbol)).is_ok() )
             {
                 return false;
             }
@@ -22,7 +22,7 @@ namespace XModem
                 return false;
             }
 
-            if (recv_symbol == Symbol::SOH)
+            if ( recv_symbol == Symbol::SOH )
             {
                 return true;
             }
@@ -66,7 +66,8 @@ namespace XModem
     {
     }
 
-    void Receiver::receive(std::ostream& ostream)
+    bool Receiver::receive(std::ostream& ostream)
     {
+        // TODO: Return more error details
     }
 }  // namespace XModem
