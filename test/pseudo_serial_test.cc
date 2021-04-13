@@ -40,6 +40,24 @@ TEST_F(PseudoSerialsTest, SequentialWriteRead)
     ASSERT_EQ(ps2.available(), 0);
 }
 
+TEST_F(PseudoSerialsTest, SequentialWriteRead_PartialRead)
+{
+    ps1.write(test_msg.data(), test_msg.length());
+
+    const std::size_t chars_to_extract_n = 3;
+
+    std::string recv_msg;
+    recv_msg.resize(chars_to_extract_n);
+
+    std::size_t read_bytes_n;
+    ASSERT_TRUE(ps2.readsome(recv_msg.data(), chars_to_extract_n, read_bytes_n).is_ok());
+
+    ASSERT_EQ(read_bytes_n, chars_to_extract_n);
+    ASSERT_EQ(test_msg.substr(0, chars_to_extract_n), recv_msg);
+
+    ASSERT_EQ(ps2.available(), test_msg.size() - chars_to_extract_n);
+}
+
 TEST_F(PseudoSerialsTest, ReadTimeout)
 {
     ps1.set_read_timeout(10);
