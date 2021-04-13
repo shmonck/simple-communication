@@ -1,6 +1,6 @@
 #pragma once
 
-#include <io/serial.h>
+#include <io/device.h>
 #include <xmodem/error_detection.h>
 
 #include <fstream>
@@ -39,13 +39,13 @@ namespace XModem
         bool send_symbol(const Symbol symbol) const;
 
         /**
-         * @brief Weak reference to the serial object
+         * @brief Weak reference to the Device object
          *
-         * @note The user is responsible for the Serial object's lifetime
+         * @note The user is responsible for the Device object's lifetime
          */
-        IO::Serial* const m_serial;
+        IO::Device* const m_device;
 
-        Endpoint(IO::Serial& serial);
+        Endpoint(IO::Device& device);
 
         /**
          * @brief Initializes the transmission

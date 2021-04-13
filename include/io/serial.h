@@ -19,6 +19,8 @@ namespace IO
      * @class Serial
      *
      * @brief Serial device
+     * 
+     * @todo Implement different configuration options. Currently only baud rate and timeout is supported. Remaining options are OS default.
      *
      */
     class Serial : public Device

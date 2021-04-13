@@ -34,7 +34,7 @@ namespace XModem
         const ErrorDetection* const m_error_detection;
 
     public:
-        Receiver(IO::Serial& serial, const ErrorDetection& error_detection);
+        Receiver(IO::Device& device, const ErrorDetection& error_detection);
 
         /**
          * @brief Receives a file

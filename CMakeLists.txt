@@ -100,6 +100,7 @@ add_executable(simple_test)
 
 target_sources(simple_test PRIVATE
     test/pseudo_serial_test.cc
+    test/xmodem_transmission_test.cc
 )
 
 target_link_libraries(simple_test
@@ -115,4 +116,6 @@ target_include_directories(simple_test PUBLIC
 include(GoogleTest)
 
 gtest_discover_tests(simple_test)
+
+target_compile_definitions(simple_test PUBLIC TEST_RESOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/test/")
 

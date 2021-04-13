@@ -8,7 +8,7 @@ namespace XModem
     {
         std::size_t read_bytes_n;
 
-        if ( !m_serial->readsome(&symbol, sizeof(Symbol), read_bytes_n).is_ok() )
+        if ( !m_device->readsome(&symbol, sizeof(Symbol), read_bytes_n).is_ok() )
         {
             spdlog::error("Error occured during serial read");
             return false;
@@ -30,7 +30,7 @@ namespace XModem
     {
         spdlog::info("Sending symbol: 0x{0:x} ({1})", static_cast<char>(symbol), symbol_string(symbol));
 
-        if ( !m_serial->write(&symbol, sizeof(Symbol)).is_ok() )
+        if ( !m_device->write(&symbol, sizeof(Symbol)).is_ok() )
         {
             spdlog::error("Error occured during serial write");
             return false;
@@ -39,7 +39,7 @@ namespace XModem
         return true;
     }
 
-    Endpoint::Endpoint(IO::Serial& serial) : m_serial(&serial)
+    Endpoint::Endpoint(IO::Device& device) : m_device(&device)
     {
     }
 }  // namespace XModem

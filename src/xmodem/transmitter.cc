@@ -116,7 +116,7 @@ namespace XModem
         return true;
     }
 
-    Transmitter::Transmitter(IO::Serial& serial) : Endpoint(serial)
+    Transmitter::Transmitter(IO::Device& device) : Endpoint(device)
     {
     }
 
@@ -152,7 +152,7 @@ namespace XModem
 
             spdlog::info("Sending packet number {}", packet_n);
 
-            if ( !m_serial->write(packet.data(), packet.size()).is_ok() )
+            if ( !m_device->write(packet.data(), packet.size()).is_ok() )
             {
                 return false;
             }

@@ -27,7 +27,7 @@ namespace IO
     public:
         ~PseudoSerial() = default;
 
-        void connect_to(PseudoSerial& pseudo_serial);
+        bool connect_to(PseudoSerial& pseudo_serial);
 
         inline void set_read_timeout(const int timeout_ms)
         {

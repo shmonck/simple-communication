@@ -19,7 +19,7 @@ namespace XModem
         std::unique_ptr<ErrorDetection> m_error_detection;
 
     public:
-        Transmitter(IO::Serial& serial);
+        Transmitter(IO::Device& device);
 
         /**
          * @brief Sends a file

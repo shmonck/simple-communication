@@ -119,7 +119,7 @@ namespace XModem
         return true;
     }
 
-    Receiver::Receiver(IO::Serial& serial, const ErrorDetection& error_detection) : Endpoint(serial), m_error_detection(&error_detection)
+    Receiver::Receiver(IO::Device& device, const ErrorDetection& error_detection) : Endpoint(device), m_error_detection(&error_detection)
     {
     }
 
@@ -199,7 +199,7 @@ namespace XModem
 
                 std::size_t read_bytes_n;
 
-                if ( !m_serial->readsome(packet.data() + got_bytes_n, packet.size() - got_bytes_n, read_bytes_n)
+                if ( !m_device->readsome(packet.data() + got_bytes_n, packet.size() - got_bytes_n, read_bytes_n)
                           .is_ok() )
                 {
                     spdlog::error("Error occured during serial read");

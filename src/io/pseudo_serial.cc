@@ -2,10 +2,17 @@
 
 namespace IO
 {
-    void PseudoSerial::connect_to(PseudoSerial& pseudo_serial)
+    bool PseudoSerial::connect_to(PseudoSerial& pseudo_serial)
     {
+        if (&pseudo_serial == this)
+        {
+            return false;
+        }
+
         m_connected_serial = &pseudo_serial;
         pseudo_serial.m_connected_serial = this;
+
+        return true;
     }
 
     Error PseudoSerial::write(const void* const data, const std::size_t length)
