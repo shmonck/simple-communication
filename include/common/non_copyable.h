@@ -3,7 +3,7 @@
 /**
  * @class NonCopyable
  *
- * @brief Used to make inherited classes uncopyable
+ * @brief Used to make inherited classes noncopyable
  *
  */
 class NonCopyable
