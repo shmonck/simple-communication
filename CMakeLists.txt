@@ -47,6 +47,7 @@ add_library(io)
 
 target_sources(io PRIVATE
     src/io/serial.cc
+    src/io/device.cc
     src/io/pseudo_serial.cc
 )
 
