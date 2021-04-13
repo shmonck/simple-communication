@@ -2,6 +2,10 @@
 
 #include <cstring>
 
+#include <spdlog/common.h>
+#include <spdlog/fmt/bin_to_hex.h>
+#include <spdlog/spdlog.h>
+
 namespace IO
 {
     bool PseudoSerial::connect_to(PseudoSerial& pseudo_serial)
@@ -38,6 +42,8 @@ namespace IO
         }
 
         {
+            // TODO: Read from the front!
+
             std::lock_guard lock(m_connected_serial->m_buffer_mutex);
 
             auto& other_buffer = m_connected_serial->m_buffer;
@@ -45,6 +51,8 @@ namespace IO
 
             other_buffer.resize(prev_size + length);
             std::memcpy(other_buffer.data() + prev_size, data, length);
+
+            spdlog::info("Buffer contents after write: {}", spdlog::to_hex(other_buffer));
         }
 
         m_connected_serial->m_write_cv.notify_one();
@@ -80,6 +88,8 @@ namespace IO
         std::memcpy(buffer, m_buffer.data() + new_size, read_bytes_n);
 
         m_buffer.resize(new_size);
+
+        spdlog::info("Buffer contents after read: {}", spdlog::to_hex(m_buffer));
 
         return Error{};
     }
