@@ -33,7 +33,7 @@ namespace IO
          * @brief Connect to another pseudo serial
          *
          * @note The function will return false if /p pseudo_serial is this serial
-         * @note This function should be called before any write/read operation
+         * @note This function is not thread safe and should be called before any write/read operation
          * @note Connecting two serials to one serial is undefined behavior
          *
          * @param pseudo_serial The serial to connect to
@@ -52,9 +52,19 @@ namespace IO
             m_read_timeout_ms = timeout_ms;
         }
 
+        /**
+         * @brief Returns available bytes to read
+         *
+         * @note This function is thread safe
+         *
+         * @return std::size_t Available bytes to read
+         */
         [[nodiscard]] std::size_t available();
 
+        /// @note This function is thread safe
         virtual Error write(const void* const data, const std::size_t length) final;
+
+        /// @note This function is thread safe
         virtual Error readsome(void* const buffer, const std::size_t length, std::size_t& read_bytes_n) final;
     };
 }  // namespace IO
