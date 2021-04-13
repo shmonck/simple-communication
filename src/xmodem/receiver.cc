@@ -4,12 +4,9 @@
 
 namespace XModem
 {
-    bool Receiver::initialize_transmission() const
+    bool Receiver::initialize_transmission()
     {
-        const Symbol init_symbol = m_error_detection->get_init_symbol();
-
         spdlog::info("Initializing transmission");
-        spdlog::info("Expecting symbol: {0:x}", static_cast<char>(init_symbol));
 
         // TODO: Move this somewhere else
         constexpr std::size_t try_count{ 10 };
@@ -19,35 +16,29 @@ namespace XModem
         for ( std::size_t i = 0; i < try_count; i++ )
         {
             spdlog::info("Try {}/{}", i + 1, try_count);
-            spdlog::info("Sending the initial symbol");
 
-            if ( !m_serial->write(&init_symbol, sizeof(Symbol)).is_ok() )
+            if ( !send_symbol(m_error_detection->get_init_symbol()) )
             {
-                spdlog::error("Error occured during serial write");
                 return false;
             }
 
             spdlog::info("Waiting for the response");
 
             Symbol recv_symbol;
-            std::size_t read_bytes_n;
 
-            if ( !m_serial->readsome(&recv_symbol, sizeof(Symbol), read_bytes_n).is_ok() )
+            if ( !read_symbol(recv_symbol) )
             {
-                spdlog::error("Error occured during serial read");
                 return false;
             }
 
-            if ( read_bytes_n == 0 )
-            {
-                spdlog::warn("No bytes received");
-                continue;
-            }
-
-            spdlog::info("Received symbol: {0:x}", static_cast<char>(recv_symbol));
-
             switch ( recv_symbol )
             {
+                case Symbol::INV:
+                {
+                    spdlog::warn("Read timeout");
+                    break;
+                }
+
                 case Symbol::SOH:
                 {
                     spdlog::info("Initialization succesful");
@@ -55,10 +46,15 @@ namespace XModem
                 }
 
                 case Symbol::EOT: [[fallthrough]];
-                case Symbol::ETB: [[fallthrough]];
+                case Symbol::ETB:
+                {
+                    spdlog::warn("End of transmission");
+                    return false;
+                }
+
                 case Symbol::CAN: 
                 {
-                    spdlog::warn("EOT or transmission cancelled");
+                    spdlog::warn("Transmission cancelled");
                     return false;
                 }
 
@@ -74,7 +70,20 @@ namespace XModem
         return false;
     }
 
-    bool Receiver::is_packet_valid(const Packet& packet, const std::uint16_t packet_n) const
+    bool Receiver::finalize_transmission() const
+    {
+        spdlog::info("Finalizing transmission");
+
+        if(!send_symbol(Symbol::ACK))
+        {
+            return false;
+        }
+
+        spdlog::info("Transmission finalized successfully");
+        return true;
+    }
+
+    bool Receiver::is_packet_valid(const Packet& packet, const std::uint8_t packet_n) const
     {
         if ( packet.size() != m_error_detection->get_total_packet_size() )
         {
@@ -88,7 +97,7 @@ namespace XModem
             return false;
         }
 
-        if ( static_cast<std::uint8_t>(packet.at(1)) != static_cast<std::uint8_t>(packet_n) )
+        if ( static_cast<std::uint8_t>(packet.at(1)) != packet_n )
         {
             spdlog::warn("Invalid packet number");
             return false;
@@ -110,7 +119,7 @@ namespace XModem
         return true;
     }
 
-    Receiver::Receiver(IO::Serial& serial, ErrorDetection& error_detection) : Endpoint(serial, error_detection)
+    Receiver::Receiver(IO::Serial& serial, const ErrorDetection& error_detection) : Endpoint(serial), m_error_detection(&error_detection)
     {
     }
 
@@ -123,7 +132,7 @@ namespace XModem
             return false;
         }
 
-        std::uint16_t packet_n{ 1 };
+        std::size_t packet_n{ 1 };
 
         Packet packet;
         packet.resize(m_error_detection->get_total_packet_size());
@@ -135,6 +144,54 @@ namespace XModem
         while ( !done )
         {
             spdlog::info("Receiving packet number {}", packet_n);
+
+            while (got_bytes_n == 0)
+            {
+                Symbol recv_symbol;
+
+                if ( !read_symbol(recv_symbol) )
+                {
+                    return false;
+                }
+
+                switch ( recv_symbol )
+                {
+                    case Symbol::INV:
+                    {
+                        spdlog::warn("Read timeout");
+                        break;
+                    }
+
+                    case Symbol::SOH:
+                    {
+                        spdlog::info("Start of header received");
+
+                        packet.at(got_bytes_n) = static_cast<char>(Symbol::SOH);
+                        got_bytes_n++;
+
+                        break;
+                    }
+
+                    case Symbol::EOT: [[fallthrough]];
+                    case Symbol::ETB:
+                    {
+                        spdlog::info("End of transmission");
+                        return finalize_transmission();
+                    }
+
+                    case Symbol::CAN:
+                    {
+                        spdlog::warn("Transmission cancelled");
+                        return false;
+                    }
+
+                    default:
+                    {
+                        spdlog::error("Invalid symbol");
+                        return false;
+                    }
+                }
+            }
 
             while ( got_bytes_n < packet.size() )
             {
@@ -149,81 +206,43 @@ namespace XModem
                     return false;
                 }
 
+                if (read_bytes_n == 0)
+                {
+                    spdlog::warn("Read timeout");
+                    continue;
+                }
+
                 spdlog::info("Received {} bytes", read_bytes_n);
-
-                // TODO: This check isn't really valid, fix this
-
-                if ( read_bytes_n == 1 )
-                {
-                    Symbol recv_symbol = static_cast<Symbol>(packet.at(got_bytes_n));
-
-                    switch ( recv_symbol )
-                    {
-                        case Symbol::EOT: [[fallthrough]];
-                        case Symbol::ETB:
-                        {
-                            spdlog::info("End of transmission");
-                            done = true;
-                            break;
-                        }
-
-                        case Symbol::CAN: 
-                        {
-                            spdlog::warn("Transmission cancelled");
-                            return false;
-                        }
-
-                        default: break;
-                    }
-                }
-
-                if ( done )
-                {
-                    break;
-                }
 
                 got_bytes_n += read_bytes_n;
             }
 
-            if ( done )
-            {
-                break;
-            }
+            spdlog::info("Whole packet received");
 
-            Symbol resp_symbol;
-
-            if ( is_packet_valid(packet, packet_n) )
+            if ( is_packet_valid(packet, static_cast<std::uint8_t>(packet_n % 256)) )
             {
                 spdlog::info("The packet is valid");
-
-                resp_symbol = Symbol::ACK;
+                
                 ostream.write(packet.data() + 3, PACKET_DATA_SIZE);  // + 3 to skip the header
 
                 packet_n++;
-                if ( packet_n == 256 )
+
+                if ( !send_symbol(Symbol::ACK) )
                 {
-                    packet_n = 0;
+                    return false;
                 }
             }
             else
             {
-                resp_symbol = Symbol::NAK;
-            }
-
-            spdlog::info("Sending response symbol");
-
-            if ( !m_serial->write(&resp_symbol, sizeof(Symbol)).is_ok() )
-            {
-                spdlog::error("Error occured during serial write");
-                return false;
+                if ( !send_symbol(Symbol::NAK) )
+                {
+                    return false;
+                }
             }
 
             got_bytes_n = 0;
         }
 
-        Symbol resp_symbol{ Symbol::ACK };
-        m_serial->write(&resp_symbol, sizeof(Symbol));
-
-        return true;
+        return false;
     }
 }  // namespace XModem

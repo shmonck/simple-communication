@@ -1,15 +1,14 @@
 #include <xmodem/transmitter.h>
+#include <xmodem/checksum.h>
+#include <xmodem/crc.h>
 
 #include <spdlog/spdlog.h>
 
 namespace XModem
 {
-    bool Transmitter::initialize_transmission() const
+    bool Transmitter::initialize_transmission()
     {
         spdlog::info("Initializing transmission");
-        spdlog::info("Expecting symbol: {0:x}", static_cast<char>(m_error_detection->get_init_symbol()));
-
-        // TODO: Deduce the error detection method by initial symbol
 
         // TODO: Move this somewhere else
         constexpr std::size_t try_count{ 10 };
@@ -19,26 +18,39 @@ namespace XModem
             spdlog::info("Try {}/{}", i + 1, try_count);
 
             Symbol recv_symbol;
-            std::size_t read_bytes_n;
 
-            if ( !m_serial->readsome(&recv_symbol, sizeof(Symbol), read_bytes_n).is_ok() )
+            if ( !read_symbol(recv_symbol) )
             {
-                spdlog::error("Error occured during serial read");
                 return false;
             }
 
-            if ( read_bytes_n == 0 )
+            switch (recv_symbol)
             {
-                spdlog::warn("No bytes received");
-                continue;
-            }
+                case Symbol::INV:
+                {
+                    spdlog::warn("Read timeout");
+                    break;
+                }
 
-            spdlog::info("Received symbol: {0:x}", static_cast<char>(recv_symbol));
+                case Symbol::NAK:
+                {
+                    spdlog::info("Initialization successful. Receiver wants to use checksum");
+                    m_error_detection = std::make_unique<Checksum>();
+                    return true;
+                }
 
-            if ( recv_symbol == m_error_detection->get_init_symbol() )
-            {
-                spdlog::info("Initialization successful");
-                return true;
+                case Symbol::C:
+                {
+                    spdlog::info("Initialization successful. Receiver wants to use CRC");
+                    m_error_detection = std::make_unique<CRC>();
+                    return true;
+                }
+                
+                default:
+                {
+                    spdlog::error("Invalid symbol");
+                    break;
+                }
             }
         }
 
@@ -46,7 +58,65 @@ namespace XModem
         return false;
     }
 
-    Transmitter::Transmitter(IO::Serial& serial, ErrorDetection& checksum) : Endpoint(serial, checksum)
+    bool Transmitter::finalize_transmission() const
+    {
+        spdlog::info("Finalizing transmission");
+
+        if ( !send_symbol(Symbol::EOT) )
+        {
+            return false;
+        }
+
+        while ( true )
+        {
+            spdlog::info("Waiting for ACK");
+
+            Symbol recv_symbol;
+
+            if ( !read_symbol(recv_symbol) )
+            {
+                return false;
+            }
+
+            bool success{ false };
+
+            switch ( recv_symbol )
+            {
+                case Symbol::INV:
+                {
+                    spdlog::warn("Read timeout");
+                    break;
+                }
+
+                case Symbol::ACK:
+                {
+                    spdlog::info("Transmission finalized successfully");
+                    success = true;
+                    break;
+                }
+
+                default:
+                {
+                    spdlog::error("Invalid symbol");
+                    return false;
+                }
+            }
+
+            if ( success )
+            {
+                break;
+            }
+        }
+
+        if ( !send_symbol(Symbol::ETB) )
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    Transmitter::Transmitter(IO::Serial& serial) : Endpoint(serial)
     {
     }
 
@@ -59,7 +129,7 @@ namespace XModem
             return false;
         }
 
-        std::uint16_t packet_n{ 1 };
+        std::size_t packet_n{ 1 };
 
         while ( true )
         {
@@ -67,8 +137,8 @@ namespace XModem
             packet.reserve(m_error_detection->get_total_packet_size());
 
             packet.push_back(static_cast<char>(Symbol::SOH));
-            packet.push_back(static_cast<char>(packet_n));
-            packet.push_back(static_cast<char>(255 - packet_n));
+            packet.push_back(static_cast<char>(packet_n % 256));
+            packet.push_back(static_cast<char>(255 - (packet_n % 256)));
 
             packet.resize(packet.size() + PACKET_DATA_SIZE);
 
@@ -84,65 +154,73 @@ namespace XModem
 
             if ( !m_serial->write(packet.data(), packet.size()).is_ok() )
             {
-                spdlog::error("Error occured during serial write");
                 return false;
             }
 
             spdlog::info("Waiting for response");
 
             Symbol recv_symbol;
-            std::size_t read_bytes_n;
 
-            if ( !m_serial->readsome(&recv_symbol, sizeof(Symbol), read_bytes_n).is_ok() )
+            if ( !read_symbol(recv_symbol) )
             {
-                spdlog::error("Error occured during serial read");
                 return false;
             }
 
-            if ( read_bytes_n == 0 or recv_symbol == Symbol::NAK )
-            {
-                spdlog::warn("The packet was rejected or serial read timeout");
+            bool success{ false };
 
-                istream.clear();
-                istream.seekg(prev_stream_pos);
+            switch (recv_symbol)
+            {
+                case Symbol::INV:
+                {
+                    spdlog::warn("Read timeout");
+                    break;
+                }
+
+                case Symbol::NAK:
+                {
+                    spdlog::warn("The packet was rejected");
+                    break;
+                }
+
+                case Symbol::CAN:
+                {
+                    spdlog::warn("Transmission cancelled");
+                    return false;
+                }
+
+                case Symbol::ACK:
+                {
+                    spdlog::info("Packet accepted");
+                    success = true;
+                    break;
+                }
+
+                default:
+                {
+                    spdlog::warn("Unexcepted symbol");
+                    break;
+                }
             }
-            else
-            {
-                spdlog::info("Packet accepted");
 
+            if ( success )
+            {
                 if ( istream.peek() == EOF )
                 {
                     spdlog::info("End of the file");
-                    break;
+                    return finalize_transmission();
                 }
                 else
                 {
                     packet_n++;
-
-                    if ( packet_n == 256 )
-                    {
-                        packet_n = 0;
-                    }
                 }
+            }
+            else
+            {
+                istream.clear();
+                istream.seekg(prev_stream_pos);
             }
         }
 
-        spdlog::info("Sending EOT");
-
-        Symbol symbol;
-
-        symbol = Symbol::EOT;
-        if ( !m_serial->write(&symbol, sizeof(Symbol)).is_ok() )
-        {
-            spdlog::error("Error occured during serial write");
-            return false;
-        }
-
-        spdlog::info("Sending ETB");
-
-        symbol = Symbol::ETB;
-        m_serial->write(&symbol, sizeof(Symbol));
-
-        return true;
+        return false;
     }
 }  // namespace XModem

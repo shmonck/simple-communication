@@ -10,11 +10,14 @@ namespace XModem
     class Endpoint
     {
     protected:
+        bool read_symbol(Symbol &symbol) const;
+        bool send_symbol(const Symbol symbol) const;
+
         IO::Serial* const m_serial;
-        ErrorDetection* const m_error_detection;
 
-        Endpoint(IO::Serial& serial, ErrorDetection& error_detection);
+        Endpoint(IO::Serial& serial);
 
-        virtual bool initialize_transmission() const = 0;
+        virtual bool initialize_transmission() = 0;
+        virtual bool finalize_transmission() const = 0;
     };
 }  // namespace XModem

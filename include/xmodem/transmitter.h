@@ -8,10 +8,13 @@ namespace XModem
 {
     class Transmitter : public Endpoint
     {
-        virtual bool initialize_transmission() const final;
+        virtual bool initialize_transmission() final;
+        virtual bool finalize_transmission() const final;
+
+        std::unique_ptr<ErrorDetection> m_error_detection;
 
     public:
-        Transmitter(IO::Serial& serial, ErrorDetection& checksum);
+        Transmitter(IO::Serial& serial);
 
         bool send(std::istream& istream);
     };

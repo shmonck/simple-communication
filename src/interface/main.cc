@@ -67,28 +67,29 @@ int main()
     serial.set_baud_rate(IO::Serial::BaudRate::BAUDRATE_9600);
     serial.set_read_timeout(3000);
 
-    const auto endpoint_option = menu("Endpoint", {"Receiver", "Transmitter"});
-    const auto error_detection_option = menu("Error detection", {"Checksum", "CRC"});
+    const auto endpoint_option = menu("Endpoint", {"Receiver", "Transmitter"}); 
     
     fmt::print("File path: ");
 
     std::string file_path;
     std::getline(std::cin, file_path);
 
-    std::unique_ptr<XModem::ErrorDetection> error_detection;
-    if ( error_detection_option == "Checksum" )
-    {
-        error_detection = std::make_unique<XModem::Checksum>();
-    }
-    else if ( error_detection_option == "CRC" )
-    {
-        error_detection = std::make_unique<XModem::CRC>();
-    }
-
     // TODO: Consider removing inheritance and move send/receive to Endpoint
 
     if ( endpoint_option == "Receiver" )
     {
+        const auto error_detection_option = menu("Error detection", { "Checksum", "CRC" });
+
+        std::unique_ptr<XModem::ErrorDetection> error_detection;
+        if ( error_detection_option == "Checksum" )
+        {
+            error_detection = std::make_unique<XModem::Checksum>();
+        }
+        else if ( error_detection_option == "CRC" )
+        {
+            error_detection = std::make_unique<XModem::CRC>();
+        }
+
         std::ofstream ofstream(file_path, std::ios::out | std::ios::trunc | std::ios::binary);
         if ( !ofstream.is_open() )
         {
@@ -108,7 +109,7 @@ int main()
             return 1;
         }
 
-        XModem::Transmitter transmitter(serial, *error_detection);
+        XModem::Transmitter transmitter(serial);
         transmitter.send(ifstream);
     }
 }
