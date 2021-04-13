@@ -1,6 +1,7 @@
 docs
 build
 out
+report
 
 CMakeSettings.json
 

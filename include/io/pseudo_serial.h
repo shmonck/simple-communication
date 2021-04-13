@@ -41,6 +41,8 @@ namespace IO
         /**
          * @brief Set the read timeout in ms
          *
+         * @note This function is not thread safe and should only be used before calling any read function
+         *
          * @param timeout_ms The timeout in ms
          */
         inline void set_read_timeout(const int timeout_ms)
