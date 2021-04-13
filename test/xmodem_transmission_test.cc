@@ -9,6 +9,10 @@
 #include <iostream>
 #include <thread>
 
+#ifndef TEST_RESOURCE_DIR
+    #define TEST_RESOURCE_DIR "./"
+#endif
+
 class XModemTransmissionTest : public ::testing::Test
 {
 protected:

@@ -17,6 +17,7 @@ namespace IO
      */
     class PseudoSerial : public Device
     {
+        /// Pointer to another serial this serial is connected to. User is responsible for PseudoSerial object lifetime
         PseudoSerial* m_connected_serial{ nullptr };
 
         std::vector<char> m_buffer;
@@ -28,8 +29,20 @@ namespace IO
     public:
         ~PseudoSerial() = default;
 
+        /**
+         * @brief Connect to another pseudo serial
+         *
+         * @param pseudo_serial The serial to connect to
+         * @return true Connected successfuly
+         * @return false Connection failed (cannot connect the serial to itself)
+         */
         bool connect_to(PseudoSerial& pseudo_serial);
 
+        /**
+         * @brief Set the read timeout in ms
+         *
+         * @param timeout_ms The timeout in ms
+         */
         inline void set_read_timeout(const int timeout_ms)
         {
             m_read_timeout_ms = timeout_ms;
