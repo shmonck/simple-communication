@@ -1,19 +1,30 @@
 #pragma once
 
-#include <xmodem/error_detection.h>
 #include <xmodem/defines.h>
+#include <xmodem/error_detection.h>
 
 namespace XModem
 {
-	class Checksum : public ErrorDetection
+    /**
+     * @class Checksum
+     */
+    class Checksum : public ErrorDetection
     {
+        /**
+         * @brief Calculates the checksum
+         *
+         * @param data Pointer to the data to calculate the checksum of
+         * @param length Data length
+         * @return std::uint8_t The checksum
+         */
         [[nodiscard]] static std::uint8_t checksum(const char* const data, const std::size_t length);
 
     public:
         virtual void
         append_verification_bytes(Packet& packet, const char* const data, const std::size_t length) const final;
 
-        [[nodisacrd]] virtual bool is_verification_ok(const Packet& packet, const char* const data, const std::size_t length) const final;
+        [[nodisacrd]] virtual bool
+        is_verification_ok(const Packet& packet, const char* const data, const std::size_t length) const final;
 
         [[nodiscard]] inline virtual Symbol get_init_symbol() const final
         {
@@ -31,4 +42,4 @@ namespace XModem
             return "Checksum";
         }
     };
-}
+}  // namespace XModem

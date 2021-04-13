@@ -6,6 +6,11 @@
 
 namespace XModem
 {
+    /**
+     * @class Transmitter
+     *
+     * @brief Represents the XModem transmitter
+     */
     class Transmitter : public Endpoint
     {
         virtual bool initialize_transmission() final;
@@ -16,6 +21,13 @@ namespace XModem
     public:
         Transmitter(IO::Serial& serial);
 
+        /**
+         * @brief Sends a file
+         *
+         * @param istream The istream object to get the file data from
+         * @return true If the file was sent successfully
+         * @return false If error occured
+         */
         bool send(std::istream& istream);
     };
 }  // namespace XModem

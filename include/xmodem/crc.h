@@ -4,8 +4,18 @@
 
 namespace XModem
 {
+    /**
+     * @class CRC
+     */
     class CRC : public ErrorDetection
     {
+        /**
+         * @brief Calculates the CRC
+         *
+         * @param data Pointer to the data to caluclate the CRC of
+         * @param length Data length
+         * @return std::uint16_t The CRC
+         */
         [[nodiscard]] static std::uint16_t crc(const char* const data, const std::size_t length);
 
     public:

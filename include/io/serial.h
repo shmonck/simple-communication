@@ -93,13 +93,8 @@ namespace IO
          */
         Error set_write_timeout(const int timeout_ms);
 
-        /// @see IO::Device::write
         virtual Error write(const void* const data, const std::size_t length) final;
-
-        /// @see IO::Device::read
         virtual Error read(void* const buffer, const std::size_t length) final;
-
-        /// @see IO::Device::readsome
         virtual Error readsome(void* const buffer, const std::size_t length, std::size_t& read_bytes_n) final;
     };
 }  // namespace IO
