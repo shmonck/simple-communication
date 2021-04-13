@@ -1,10 +1,12 @@
 #include <io/pseudo_serial.h>
 
+#include <cstring>
+
 namespace IO
 {
     bool PseudoSerial::connect_to(PseudoSerial& pseudo_serial)
     {
-        if (&pseudo_serial == this)
+        if ( &pseudo_serial == this )
         {
             return false;
         }
@@ -17,15 +19,14 @@ namespace IO
 
     Error PseudoSerial::write(const void* const data, const std::size_t length)
     {
-        if (length == 0)
+        if ( length == 0 )
         {
             return Error{};
         }
 
         if ( m_connected_serial == nullptr )
         {
-            return Error
-            {
+            return Error{
                 .m_status = Error::Status::NO_DEVICE,
             };
         }
@@ -74,16 +75,15 @@ namespace IO
         }
 
         std::lock_guard lock(m_buffer_mutex);
-        
+
         read_bytes_n = std::min(m_buffer.size(), length);
 
         const std::size_t new_size = m_buffer.size() - read_bytes_n;
 
         std::memcpy(buffer, m_buffer.data() + new_size, read_bytes_n);
-        
+
         m_buffer.resize(new_size);
 
         return Error{};
-        
     }
 }  // namespace IO

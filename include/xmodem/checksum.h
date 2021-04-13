@@ -23,7 +23,7 @@ namespace XModem
         virtual void
         append_verification_bytes(Packet& packet, const char* const data, const std::size_t length) const final;
 
-        [[nodisacrd]] virtual bool
+        virtual bool
         is_verification_ok(const Packet& packet, const char* const data, const std::size_t length) const final;
 
         [[nodiscard]] inline virtual Symbol get_init_symbol() const final

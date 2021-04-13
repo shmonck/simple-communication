@@ -3,6 +3,7 @@
 #include <xmodem/endpoint.h>
 
 #include <iostream>
+#include <memory>
 
 namespace XModem
 {

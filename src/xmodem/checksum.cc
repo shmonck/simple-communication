@@ -22,7 +22,7 @@ namespace XModem
     bool Checksum::is_verification_ok(const Packet& packet, const char* const data, const std::size_t length) const
     {
         std::uint8_t checksum_value = packet.back();
-        
+
         return checksum(data, length) == checksum_value;
     }
 }  // namespace XModem

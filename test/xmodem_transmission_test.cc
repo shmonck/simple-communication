@@ -1,12 +1,13 @@
 #include <gtest/gtest.h>
 
 #include <io/pseudo_serial.h>
+#include <xmodem/checksum.h>
 #include <xmodem/receiver.h>
 #include <xmodem/transmitter.h>
-#include <xmodem/checksum.h>
 
 #include <array>
 #include <iostream>
+#include <thread>
 
 class XModemTransmissionTest : public ::testing::Test
 {
@@ -46,13 +47,9 @@ protected:
 
 TEST_F(XModemTransmissionTest, SuccessfulTransmission)
 {
-    std::thread t1([&]() { 
-        ASSERT_TRUE(receiver.receive(ofstream));
-    });
+    std::thread t1([&]() { ASSERT_TRUE(receiver.receive(ofstream)); });
 
-    std::thread t2([&]() { 
-        ASSERT_TRUE(transmitter.send(ifstream));
-    });
+    std::thread t2([&]() { ASSERT_TRUE(transmitter.send(ifstream)); });
 
     t1.join();
     t2.join();
