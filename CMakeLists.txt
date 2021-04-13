@@ -47,6 +47,7 @@ add_library(io)
 
 target_sources(io PRIVATE
     src/io/serial.cc
+    src/io/pseudo_serial.cc
 )
 
 target_include_directories(io PUBLIC
@@ -97,7 +98,7 @@ enable_testing()
 add_executable(simple_test)
 
 target_sources(simple_test PRIVATE
-    test/simple_test.cc
+    test/pseudo_serial_test.cc
 )
 
 target_link_libraries(simple_test

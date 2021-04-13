@@ -49,6 +49,9 @@ namespace IO
 
             /// OS specific error
             OS_ERROR = 0x01,
+
+            /// No connected device (in case of PseudoTerminal)
+            NO_DEVICE = 0x02,
         };
 
         /// Error status
@@ -101,12 +104,12 @@ namespace IO
          * @param length Data length
          * @return Error Error status
          */
-        virtual Error read(void* const buffer, const std::size_t length) = 0;
+        Error read(void* const buffer, const std::size_t length);
 
         /**
-         * @brief Reads available bytes from the device
+         * @brief Reads up to \p length bytes from the device
          *
-         * @note There's no guarantee all specified bytes will be read, always check read bytes variable
+         * @note This function will block until at least 1 byte is read, unless timeout is specified
          *
          * @param buffer Pointer to the buffer
          * @param length Data length
