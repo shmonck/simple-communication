@@ -17,6 +17,12 @@ namespace IO
         return true;
     }
 
+    std::size_t PseudoSerial::available()
+    {
+        std::lock_guard lock(m_buffer_mutex);
+        return m_buffer.size();
+    }
+
     Error PseudoSerial::write(const void* const data, const std::size_t length)
     {
         if ( length == 0 )
@@ -48,17 +54,10 @@ namespace IO
 
     Error PseudoSerial::readsome(void* const buffer, const std::size_t length, std::size_t& read_bytes_n)
     {
-        bool is_buffer_empty;
+        std::unique_lock lock(m_buffer_mutex);
 
+        if ( m_buffer.empty() )
         {
-            std::lock_guard lock(m_buffer_mutex);
-            is_buffer_empty = m_buffer.empty();
-        }
-
-        if ( is_buffer_empty )
-        {
-            std::unique_lock lock(m_buffer_mutex);
-
             if ( m_read_timeout_ms > 0 )
             {
                 if ( !m_write_cv.wait_for(
@@ -73,8 +72,6 @@ namespace IO
                 m_write_cv.wait(lock);
             }
         }
-
-        std::lock_guard lock(m_buffer_mutex);
 
         read_bytes_n = std::min(m_buffer.size(), length);
 

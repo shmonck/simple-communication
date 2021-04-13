@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
 #include <io/pseudo_serial.h>
-#include <thread>
 #include <string>
+#include <thread>
 
 class PseudoSerialsTest : public ::testing::Test
 {
@@ -18,25 +18,44 @@ protected:
     }
 };
 
-TEST_F(PseudoSerialsTest, SimpleWriteRead)
+TEST_F(PseudoSerialsTest, SequentialWriteRead)
 {
-    std::thread t1([&]() {
-        ps1.write(test_msg.data(), test_msg.length());
-    });
+    ASSERT_EQ(ps1.available(), 0);
+    ASSERT_EQ(ps2.available(), 0);
+
+    ps1.write(test_msg.data(), test_msg.length());
+
+    ASSERT_EQ(ps1.available(), 0);
+    ASSERT_EQ(ps2.available(), test_msg.length());
+
+    std::string recv_msg;
+    recv_msg.resize(test_msg.length());
+
+    std::size_t read_bytes_n;
+
+    ASSERT_TRUE(ps2.readsome(recv_msg.data(), test_msg.length(), read_bytes_n).is_ok());
+    ASSERT_EQ(read_bytes_n, test_msg.length());
+
+    ASSERT_EQ(test_msg, recv_msg);
+}
+
+TEST_F(PseudoSerialsTest, AsyncWriteRead)
+{
+    std::thread t1([&]() { ps1.write(test_msg.data(), test_msg.length()); });
 
     std::thread t2([&]() {
         std::string recv_msg;
         recv_msg.resize(test_msg.length());
 
         ASSERT_TRUE(ps2.read(recv_msg.data(), recv_msg.length()).is_ok());
-        ASSERT_TRUE(recv_msg == test_msg);
+        ASSERT_EQ(recv_msg, test_msg);
     });
 
     t1.join();
     t2.join();
 }
 
-TEST_F(PseudoSerialsTest, WriteRead_DelayedWrite)
+TEST_F(PseudoSerialsTest, AsyncWriteRead_DelayedWrite)
 {
     std::thread t1([&]() {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -55,7 +74,7 @@ TEST_F(PseudoSerialsTest, WriteRead_DelayedWrite)
     t2.join();
 }
 
-TEST_F(PseudoSerialsTest, WriteRead_ReadTimeout)
+TEST_F(PseudoSerialsTest, AsyncWriteRead_ReadTimeout)
 {
     ps2.set_read_timeout(50);
 
