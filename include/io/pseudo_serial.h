@@ -32,7 +32,7 @@ namespace IO
         /**
          * @brief Connect to another pseudo serial
          *
-         * @note The function will return false if /p pseudo_serial is this serial
+         * @note The function will return false if @p pseudo_serial is this serial
          * @note This function is not thread safe and should be called before any write/read operation
          * @note Connecting two serials to one serial is undefined behavior
          *
